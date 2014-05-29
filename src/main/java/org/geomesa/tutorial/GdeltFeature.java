@@ -99,6 +99,9 @@ public class GdeltFeature {
             return type;
         }
 
+        public String getName() {
+            return name();
+        }
     }
 
     /**
