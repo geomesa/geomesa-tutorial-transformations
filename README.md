@@ -54,7 +54,7 @@ Download and build this tutorial
 Pick a reasonable directory on your machine, and run:
 
 ```
-git clone git@github.com:geomesa/geomesa-tutorial-projections.git
+git clone git@github.com:geomesa/geomesa-tutorial-transformations.git
 ```
 
 The ```pom.xml``` file contains an explicit list of dependent libraries that will be bundled together into the final tutorial.  You should confirm
