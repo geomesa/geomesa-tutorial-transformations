@@ -7,9 +7,10 @@ which must be ingested before following this tutorial.
 The different types of queries explored are:
 
 1.  basic filter query
-2.  query to transform results
-3.  query to create derived fields in results using transforms
-4.  query using geometric transforms on results
+2.  query to return a projection (subset) of attributes
+2.  query to transform attributes
+3.  query to create derived attributes using transforms
+4.  query to perform a geometric transform on results
 
 The only dynamic element in the tutorial is the Accumulo destination; that is
 a property that you provide on the command-line when running the code.
@@ -76,7 +77,7 @@ Run the tutorial
 On the command-line, run:
 
 ```
-java -cp ./target/geomesa-tutorial-queries-1.0-SNAPSHOT.jar geomesa.tutorial.QueryTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
+java -cp ./target/geomesa-tutorial-transformations-1.0.jar geomesa.tutorial.QueryTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
 ```
 
 where you provide the following arguments:
