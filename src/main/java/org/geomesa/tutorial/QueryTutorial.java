@@ -1,10 +1,7 @@
 package org.geomesa.tutorial;
 
 import geomesa.core.data.AccumuloFeatureStore;
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.Options;
+import org.apache.commons.cli.*;
 import org.geotools.data.*;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
@@ -35,6 +32,8 @@ import java.util.*;
  */
 
 public class QueryTutorial {
+
+    private static final String FEATURE_NAME_ARG = "featureName";
 
     /**
      * Creates a base filter that will return a small subset of our results. This can be tweaked to return different
@@ -82,7 +81,7 @@ public class QueryTutorial {
     }
 
     /**
-     * This method executes a basic bounding box query without any transformations.
+     * Executes a basic bounding box query without any transformations.
      *
      * @param simpleFeatureTypeName
      * @param featureSource
@@ -111,7 +110,7 @@ public class QueryTutorial {
     }
 
     /**
-     * This method executes a query that transforms the results coming back to say 'hello' to each result.
+     * Executes a query that transforms the results coming back to say 'hello' to each result.
      *
      * @param simpleFeatureTypeName
      * @param featureSource
@@ -151,7 +150,7 @@ public class QueryTutorial {
     }
 
     /**
-     * This method executes a query that returns a new dynamic field name created by transforming a different field.
+     * Executes a query that returns a new dynamic field name created by transforming a field.
      *
      * @param simpleFeatureTypeName
      * @param featureSource
@@ -170,8 +169,47 @@ public class QueryTutorial {
         // transformed field gets renamed to 'derived'. This differs from the previous example in that the original
         // field is still available.
         String[] properties =
-                new String[]{"derived=strConcat('hello '," + GdeltFeature.Attributes.Actor1Name + ")",
+                new String[]{GdeltFeature.Attributes.Actor1Name.getName(), "derived=strConcat('hello '," +
+                        GdeltFeature.Attributes.Actor1Name + ")",
                         GdeltFeature.Attributes.geom.getName()};
+
+        // create the query - we use the extended constructor to pass in our transform
+        Query query = new Query(simpleFeatureTypeName, cqlFilter, properties);
+
+        // execute the query
+        FeatureCollection results = featureSource.getFeatures(query);
+
+        // loop through all results
+        FeatureIterator iterator = results.features();
+        try {
+            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.Actor1Name.getName(), "derived",
+                    GdeltFeature.Attributes.geom.getName()));
+        } finally {
+            iterator.close();
+        }
+    }
+
+    /**
+     * Executes a query with a transformation on multiple fields.
+     *
+     * @param simpleFeatureTypeName
+     * @param featureSource
+     * @throws IOException
+     * @throws CQLException
+     */
+    static void mutliFieldTransformationQuery(String simpleFeatureTypeName, FeatureSource featureSource)
+            throws IOException, CQLException {
+        System.out.println("Submitting mutli-field tranformation query");
+
+        // start with our basic filter to narrow the results
+        Filter cqlFilter = createBaseFilter();
+
+        // define the properties that we want returned - this allows us to transform properties using various
+        // GeoTools transforms.
+        // In this case, we are concatenating two different attributes.
+        String[] properties = new String[]{"derived=strConcat(strConcat(" +
+                GdeltFeature.Attributes.Actor1Name + ",' - ')," + GdeltFeature.Attributes.Actor1Geo_FullName +
+                ")", GdeltFeature.Attributes.geom.getName()};
 
         // create the query - we use the extended constructor to pass in our transform
         Query query = new Query(simpleFeatureTypeName, cqlFilter, properties);
@@ -189,7 +227,7 @@ public class QueryTutorial {
     }
 
     /**
-     * This method executes a query that returns a new dynamic field name created by transforming a different field.
+     * Executes a query that performs a geometric function transform on the result set.
      *
      * @param simpleFeatureTypeName
      * @param featureSource
@@ -226,35 +264,6 @@ public class QueryTutorial {
         }
     }
 
-    static void mutliFieldTransformationQuery(String simpleFeatureTypeName, FeatureSource featureSource)
-            throws IOException, CQLException {
-        System.out.println("Submitting mutli-field tranformation query");
-
-        // start with our basic filter to narrow the results
-        Filter cqlFilter = createBaseFilter();
-
-        // define the properties that we want returned - this allows us to transform properties using various
-        // GeoTools transforms.
-        // In this case, we are concatenating two different attributes.
-        String[] properties = new String[]{"derived=strConcat(" +
-                GdeltFeature.Attributes.Actor1Name + "," + GdeltFeature.Attributes.Actor1Geo_FullName +
-                ")", GdeltFeature.Attributes.geom.getName()};
-
-        // create the query - we use the extended constructor to pass in our transform
-        Query query = new Query(simpleFeatureTypeName, cqlFilter, properties);
-
-        // execute the query
-        FeatureCollection results = featureSource.getFeatures(query);
-
-        // loop through all results
-        FeatureIterator iterator = results.features();
-        try {
-            printResults(iterator, Arrays.asList("derived", GdeltFeature.Attributes.geom.getName()));
-        } finally {
-            iterator.close();
-        }
-    }
-
     /**
      * Iterates through the given iterator and prints out specific attributes for each entry.
      *
@@ -280,7 +289,7 @@ public class QueryTutorial {
     }
 
     /**
-     * Main entry point. Executes queries against an existing GDELT dataset
+     * Main entry point. Executes queries against an existing GDELT dataset.
      *
      * @param args
      * @throws Exception
@@ -289,6 +298,9 @@ public class QueryTutorial {
         // read command line options - this contains the connection to accumulo and the table to query
         CommandLineParser parser = new BasicParser();
         Options options = SetupUtil.getCommonRequiredOptions();
+        options.addOption(OptionBuilder.withArgName(FEATURE_NAME_ARG).hasArg().isRequired()
+                .withDescription("the FeatureTypeName used to store the GDELT data, e.g.:  gdelt")
+                .create(FEATURE_NAME_ARG));
         CommandLine cmd = parser.parse(options, args);
 
         // verify that we can see this Accumulo destination in a GeoTools manner
@@ -300,8 +312,7 @@ public class QueryTutorial {
         String tableName = dsConf.get(SetupUtil.TABLE_NAME);
 
         // create the simple feature type for our test
-        //TODO allow feature type name to be passed via command line to correspond with gdelt ingestion tutorial
-        String simpleFeatureTypeName = "gdelt";
+        String simpleFeatureTypeName = cmd.getOptionValue(FEATURE_NAME_ARG);
         SimpleFeatureType simpleFeatureType = GdeltFeature.buildGdeltFeatureType(simpleFeatureTypeName);
 
         FeatureStore featureStore = (AccumuloFeatureStore) dataStore.getFeatureSource(simpleFeatureTypeName);
@@ -310,8 +321,8 @@ public class QueryTutorial {
         basicQuery(simpleFeatureTypeName, featureStore);
         basicTransformationQuery(simpleFeatureTypeName, featureStore);
         renamedTransformationQuery(simpleFeatureTypeName, featureStore);
-        geometricTransformationQuery(simpleFeatureTypeName, featureStore);
         mutliFieldTransformationQuery(simpleFeatureTypeName, featureStore);
+        geometricTransformationQuery(simpleFeatureTypeName, featureStore);
 
         // the list of available transform functions is available here:
         // http://docs.geotools.org/latest/userguide/library/main/filter.html - scroll to 'Function List'
