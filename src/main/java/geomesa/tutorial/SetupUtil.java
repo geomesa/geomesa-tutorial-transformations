@@ -1,4 +1,4 @@
-package org.geomesa.tutorial;
+package geomesa.tutorial;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;

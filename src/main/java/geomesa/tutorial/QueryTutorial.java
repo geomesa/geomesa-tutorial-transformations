@@ -1,4 +1,4 @@
-package org.geomesa.tutorial;
+package geomesa.tutorial;
 
 import geomesa.core.data.AccumuloFeatureStore;
 import org.apache.commons.cli.BasicParser;

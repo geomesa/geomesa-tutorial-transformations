@@ -1,14 +1,12 @@
-package org.geomesa.tutorial;
+package geomesa.tutorial;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import geomesa.core.index.Constants;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
