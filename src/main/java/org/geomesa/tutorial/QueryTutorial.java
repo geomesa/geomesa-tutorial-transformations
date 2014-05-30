@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,8 +47,8 @@ public class QueryTutorial {
     private static final String FEATURE_NAME_ARG = "featureName";
 
     /**
-     * Creates a base filter that will return a small subset of our results. This can be tweaked to return different
-     * results if desired.
+     * Creates a base filter that will return a small subset of our results. This can be tweaked to
+     * return different results if desired. Currently it should return 16 results.
      *
      * @return
      *
@@ -102,7 +101,7 @@ public class QueryTutorial {
     }
 
     /**
-     * Executes a basic bounding box query without any transformations.
+     * Executes a basic bounding box query without any projections.
      *
      * @param simpleFeatureTypeName
      * @param featureSource
@@ -113,21 +112,57 @@ public class QueryTutorial {
     static void basicQuery(String simpleFeatureTypeName, FeatureSource featureSource)
             throws IOException, CQLException {
 
-        System.out.println("Submitting basic query");
+        System.out.println("Submitting basic query with no projections\n");
 
+        // start with our basic filter to narrow the results
         Filter cqlFilter = createBaseFilter();
 
+        // use the 2-arg constructor for the query - this will not restrict the attributes returned
         Query query = new Query(simpleFeatureTypeName, cqlFilter);
 
+        // execute the query
         FeatureCollection results = featureSource.getFeatures(query);
 
+        // loop through all results
         FeatureIterator iterator = results.features();
+        try {
+            printResults(iterator);
+        } finally {
+            iterator.close();
+        }
+    }
+
+    /**
+     * Executes a query that restricts the attributes coming back.
+     *
+     * @param simpleFeatureTypeName
+     * @param featureSource
+     *
+     * @throws IOException
+     * @throws CQLException
+     */
+    static void basicProjectionQuery(String simpleFeatureTypeName, FeatureSource featureSource)
+            throws IOException, CQLException {
+        System.out.println("Submitting basic projection query");
+
+        // start with our basic filter to narrow the results
+        Filter cqlFilter = createBaseFilter();
+
+        // define the properties (attributes) that we want returned as a string array
+        // each element of the array is a property name we want returned
+        String[] properties = new String[] {GdeltFeature.Attributes.Actor1Name.getName(),
+                                            GdeltFeature.Attributes.geom.getName()};
+
+        // create the query - we use the extended constructor to pass in our projection
+        Query query = new Query(simpleFeatureTypeName, cqlFilter, properties);
+
+        // execute the query
+        FeatureCollection results = featureSource.getFeatures(query);
 
         // loop through all results
+        FeatureIterator iterator = results.features();
         try {
-            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.SQLDATE.getName(),
-                                                 GdeltFeature.Attributes.Actor1Name.getName(),
-                                                 GdeltFeature.Attributes.geom.getName()));
+            printResults(iterator);
         } finally {
             iterator.close();
         }
@@ -143,16 +178,15 @@ public class QueryTutorial {
      * @throws CQLException
      */
     static void basicTransformationQuery(String simpleFeatureTypeName, FeatureSource featureSource)
-            throws IOException, CQLException
-
-    {
+            throws IOException, CQLException {
         System.out.println("Submitting basic tranformation query");
 
         // start with our basic filter to narrow the results
         Filter cqlFilter = createBaseFilter();
 
-        // define the properties that we want returned - this allows us to transform properties using various
-        // GeoTools transforms. In this case, we are using a string concatenation to say 'hello' to our results. We
+        // define the properties that we want returned
+        // this also allows us to manipulate properties using various GeoTools transforms.
+        // In this case, we are using a string concatenation to say 'hello' to our results. We
         // are overwriting the existing field with the results of the transform.
         String[] properties = new String[] {GdeltFeature.Attributes.Actor1Name.getName() + "=strConcat('hello '," +
                                             "" + GdeltFeature.Attributes.Actor1Name.getName() +
@@ -167,8 +201,7 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.Actor1Name.getName(),
-                                                 GdeltFeature.Attributes.geom.getName()));
+            printResults(iterator);
         } finally {
             iterator.close();
         }
@@ -191,10 +224,11 @@ public class QueryTutorial {
         // start with our basic filter to narrow the results
         Filter cqlFilter = createBaseFilter();
 
-        // define the properties that we want returned - this allows us to transform properties using various
-        // GeoTools transforms. In this case, we are using a string concatenation to say 'hello' to our results. The
-        // transformed field gets renamed to 'derived'. This differs from the previous example in that the original
-        // field is still available.
+        // define the properties that we want returned
+        // this also allows us to manipulate properties using various GeoTools transforms.
+        // In this case, we are using a string concatenation to say 'hello' to our results. We are
+        // storing the result of the transform in a new dynamic field, called 'derived'. We also
+        // return the original attribute unchanged.
         String[] properties =
                 new String[] {GdeltFeature.Attributes.Actor1Name.getName(),
                               "derived=strConcat('hello '," +
@@ -210,9 +244,7 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.Actor1Name.getName(),
-                                                 "derived",
-                                                 GdeltFeature.Attributes.geom.getName()));
+            printResults(iterator);
         } finally {
             iterator.close();
         }
@@ -235,8 +267,8 @@ public class QueryTutorial {
         // start with our basic filter to narrow the results
         Filter cqlFilter = createBaseFilter();
 
-        // define the properties that we want returned - this allows us to transform properties using various
-        // GeoTools transforms.
+        // define the properties that we want returned
+        // this also allows us to manipulate properties using various GeoTools transforms.
         // In this case, we are concatenating two different attributes.
         String[] properties = new String[] {"derived=strConcat(strConcat(" +
                                             GdeltFeature.Attributes.Actor1Name + ",' - ')," + GdeltFeature.Attributes.Actor1Geo_FullName +
@@ -251,8 +283,7 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator, Arrays.asList("derived",
-                                                 GdeltFeature.Attributes.geom.getName()));
+            printResults(iterator);
         } finally {
             iterator.close();
         }
@@ -275,10 +306,10 @@ public class QueryTutorial {
         // start with our basic filter to narrow the results
         Filter cqlFilter = createBaseFilter();
 
-        // define the properties that we want returned - this allows us to transform properties using various
-        // GeoTools transforms.
-        // In this case, we are buffering the point to create a polygon. The transformed field gets renamed to
-        // 'derived'.
+        // define the properties that we want returned
+        // this also allows us to manipulate properties using various GeoTools transforms.
+        // In this case, we are buffering the point to create a polygon. The transformed field gets
+        // renamed to 'derived'.
         String[] properties = new String[] {GdeltFeature.Attributes.geom.getName(),
                                             "derived=buffer(" + GdeltFeature.Attributes.geom.getName() +
                                             ", 2)"};
@@ -292,22 +323,22 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.geom.getName(),
-                                                 "derived"));
+            printResults(iterator);
         } finally {
             iterator.close();
         }
     }
 
     /**
-     * Iterates through the given iterator and prints out specific attributes for each entry.
+     * Iterates through the given iterator and prints out the properties (attributes) for each entry.
      *
      * @param iterator
-     * @param attributes list of attributes to print
      */
-    private static void printResults(FeatureIterator iterator, List<String> attributes) {
+    private static void printResults(FeatureIterator iterator) {
 
-        if (!iterator.hasNext()) {
+        if (iterator.hasNext()) {
+            System.out.println("Results:");
+        } else {
             System.out.println("No results");
         }
         int n = 0;
@@ -315,9 +346,12 @@ public class QueryTutorial {
             Feature feature = iterator.next();
             StringBuilder result = new StringBuilder();
             result.append(++n);
-            for (String attribute : attributes) {
-                result.append("|").append(attribute).append('=').append(feature.getProperty(
-                        attribute).getValue());
+
+            for (org.opengis.feature.Property property : feature.getProperties()) {
+                result.append("|")
+                      .append(property.getName())
+                      .append('=')
+                      .append(property.getValue());
             }
             System.out.println(result.toString());
         }
@@ -347,19 +381,18 @@ public class QueryTutorial {
         DataStore dataStore = DataStoreFinder.getDataStore(dsConf);
         assert dataStore != null;
 
-        // retrieve the accumulo table being used for logging purposes
-        String tableName = dsConf.get(SetupUtil.TABLE_NAME);
-
         // create the simple feature type for our test
         String simpleFeatureTypeName = cmd.getOptionValue(FEATURE_NAME_ARG);
         SimpleFeatureType simpleFeatureType = GdeltFeature.buildGdeltFeatureType(
                 simpleFeatureTypeName);
 
+        // get the feature store used to query the GeoMesa data
         FeatureStore featureStore = (AccumuloFeatureStore) dataStore.getFeatureSource(
                 simpleFeatureTypeName);
 
         // execute some queries
         basicQuery(simpleFeatureTypeName, featureStore);
+        basicProjectionQuery(simpleFeatureTypeName, featureStore);
         basicTransformationQuery(simpleFeatureTypeName, featureStore);
         renamedTransformationQuery(simpleFeatureTypeName, featureStore);
         mutliFieldTransformationQuery(simpleFeatureTypeName, featureStore);
