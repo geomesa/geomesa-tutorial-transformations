@@ -1,8 +1,16 @@
 package org.geomesa.tutorial;
 
 import geomesa.core.data.AccumuloFeatureStore;
-import org.apache.commons.cli.*;
-import org.geotools.data.*;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
+import org.geotools.data.FeatureSource;
+import org.geotools.data.FeatureStore;
+import org.geotools.data.Query;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -13,7 +21,11 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Copyright 2014 Commonwealth Computer Research, Inc.
@@ -40,10 +52,12 @@ public class QueryTutorial {
      * results if desired.
      *
      * @return
+     *
      * @throws CQLException
      * @throws IOException
      */
-    static Filter createBaseFilter() throws CQLException, IOException {
+    static Filter createBaseFilter()
+            throws CQLException, IOException {
 
         // Get a FilterFactory2 to build up our query
         FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
@@ -64,15 +78,22 @@ public class QueryTutorial {
         Date end = calendar.getTime();
 
         Filter timeFilter =
-                ff.between(ff.property(GdeltFeature.Attributes.SQLDATE.getName()), ff.literal(start), ff.literal(end));
+                ff.between(ff.property(GdeltFeature.Attributes.SQLDATE.getName()),
+                           ff.literal(start),
+                           ff.literal(end));
 
         // We'll bound our query spatially to Ukraine
         Filter spatialFilter =
-                ff.bbox(GdeltFeature.Attributes.geom.getName(), 22.1371589, 44.386463, 40.228581, 52.379581,
+                ff.bbox(GdeltFeature.Attributes.geom.getName(),
+                        22.1371589,
+                        44.386463,
+                        40.228581,
+                        52.379581,
                         "EPSG:4326");
 
         // we'll also restrict our query to only articles about the US, UK or UN
-        Filter attributeFilter = ff.like(ff.property(GdeltFeature.Attributes.Actor1Name.getName()), "UNITED%");
+        Filter attributeFilter = ff.like(ff.property(GdeltFeature.Attributes.Actor1Name.getName()),
+                                         "UNITED%");
 
         // Now we can combine our filters using a boolean AND operator
         Filter conjunction = ff.and(Arrays.asList(timeFilter, spatialFilter, attributeFilter));
@@ -85,10 +106,12 @@ public class QueryTutorial {
      *
      * @param simpleFeatureTypeName
      * @param featureSource
+     *
      * @throws IOException
      * @throws CQLException
      */
-    static void basicQuery(String simpleFeatureTypeName, FeatureSource featureSource) throws IOException, CQLException {
+    static void basicQuery(String simpleFeatureTypeName, FeatureSource featureSource)
+            throws IOException, CQLException {
 
         System.out.println("Submitting basic query");
 
@@ -103,7 +126,8 @@ public class QueryTutorial {
         // loop through all results
         try {
             printResults(iterator, Arrays.asList(GdeltFeature.Attributes.SQLDATE.getName(),
-                    GdeltFeature.Attributes.Actor1Name.getName(), GdeltFeature.Attributes.geom.getName()));
+                                                 GdeltFeature.Attributes.Actor1Name.getName(),
+                                                 GdeltFeature.Attributes.geom.getName()));
         } finally {
             iterator.close();
         }
@@ -114,6 +138,7 @@ public class QueryTutorial {
      *
      * @param simpleFeatureTypeName
      * @param featureSource
+     *
      * @throws IOException
      * @throws CQLException
      */
@@ -129,9 +154,9 @@ public class QueryTutorial {
         // define the properties that we want returned - this allows us to transform properties using various
         // GeoTools transforms. In this case, we are using a string concatenation to say 'hello' to our results. We
         // are overwriting the existing field with the results of the transform.
-        String[] properties = new String[]{GdeltFeature.Attributes.Actor1Name.getName() + "=strConcat('hello '," +
-                "" + GdeltFeature.Attributes.Actor1Name.getName() +
-                ")", GdeltFeature.Attributes.geom.getName()};
+        String[] properties = new String[] {GdeltFeature.Attributes.Actor1Name.getName() + "=strConcat('hello '," +
+                                            "" + GdeltFeature.Attributes.Actor1Name.getName() +
+                                            ")", GdeltFeature.Attributes.geom.getName()};
 
         // create the query - we use the extended constructor to pass in our transform
         Query query = new Query(simpleFeatureTypeName, cqlFilter, properties);
@@ -143,7 +168,7 @@ public class QueryTutorial {
         FeatureIterator iterator = results.features();
         try {
             printResults(iterator, Arrays.asList(GdeltFeature.Attributes.Actor1Name.getName(),
-                    GdeltFeature.Attributes.geom.getName()));
+                                                 GdeltFeature.Attributes.geom.getName()));
         } finally {
             iterator.close();
         }
@@ -154,10 +179,12 @@ public class QueryTutorial {
      *
      * @param simpleFeatureTypeName
      * @param featureSource
+     *
      * @throws IOException
      * @throws CQLException
      */
-    static void renamedTransformationQuery(String simpleFeatureTypeName, FeatureSource featureSource)
+    static void renamedTransformationQuery(String simpleFeatureTypeName,
+                                           FeatureSource featureSource)
             throws IOException, CQLException {
         System.out.println("Submitting renaming tranformation query");
 
@@ -169,9 +196,10 @@ public class QueryTutorial {
         // transformed field gets renamed to 'derived'. This differs from the previous example in that the original
         // field is still available.
         String[] properties =
-                new String[]{GdeltFeature.Attributes.Actor1Name.getName(), "derived=strConcat('hello '," +
-                        GdeltFeature.Attributes.Actor1Name + ")",
-                        GdeltFeature.Attributes.geom.getName()};
+                new String[] {GdeltFeature.Attributes.Actor1Name.getName(),
+                              "derived=strConcat('hello '," +
+                              GdeltFeature.Attributes.Actor1Name + ")",
+                              GdeltFeature.Attributes.geom.getName()};
 
         // create the query - we use the extended constructor to pass in our transform
         Query query = new Query(simpleFeatureTypeName, cqlFilter, properties);
@@ -182,8 +210,9 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.Actor1Name.getName(), "derived",
-                    GdeltFeature.Attributes.geom.getName()));
+            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.Actor1Name.getName(),
+                                                 "derived",
+                                                 GdeltFeature.Attributes.geom.getName()));
         } finally {
             iterator.close();
         }
@@ -194,10 +223,12 @@ public class QueryTutorial {
      *
      * @param simpleFeatureTypeName
      * @param featureSource
+     *
      * @throws IOException
      * @throws CQLException
      */
-    static void mutliFieldTransformationQuery(String simpleFeatureTypeName, FeatureSource featureSource)
+    static void mutliFieldTransformationQuery(String simpleFeatureTypeName,
+                                              FeatureSource featureSource)
             throws IOException, CQLException {
         System.out.println("Submitting mutli-field tranformation query");
 
@@ -207,9 +238,9 @@ public class QueryTutorial {
         // define the properties that we want returned - this allows us to transform properties using various
         // GeoTools transforms.
         // In this case, we are concatenating two different attributes.
-        String[] properties = new String[]{"derived=strConcat(strConcat(" +
-                GdeltFeature.Attributes.Actor1Name + ",' - ')," + GdeltFeature.Attributes.Actor1Geo_FullName +
-                ")", GdeltFeature.Attributes.geom.getName()};
+        String[] properties = new String[] {"derived=strConcat(strConcat(" +
+                                            GdeltFeature.Attributes.Actor1Name + ",' - ')," + GdeltFeature.Attributes.Actor1Geo_FullName +
+                                            ")", GdeltFeature.Attributes.geom.getName()};
 
         // create the query - we use the extended constructor to pass in our transform
         Query query = new Query(simpleFeatureTypeName, cqlFilter, properties);
@@ -220,7 +251,8 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator, Arrays.asList("derived", GdeltFeature.Attributes.geom.getName()));
+            printResults(iterator, Arrays.asList("derived",
+                                                 GdeltFeature.Attributes.geom.getName()));
         } finally {
             iterator.close();
         }
@@ -231,10 +263,12 @@ public class QueryTutorial {
      *
      * @param simpleFeatureTypeName
      * @param featureSource
+     *
      * @throws IOException
      * @throws CQLException
      */
-    static void geometricTransformationQuery(String simpleFeatureTypeName, FeatureSource featureSource)
+    static void geometricTransformationQuery(String simpleFeatureTypeName,
+                                             FeatureSource featureSource)
             throws IOException, CQLException {
         System.out.println("Submitting geometric tranformation query");
 
@@ -245,9 +279,9 @@ public class QueryTutorial {
         // GeoTools transforms.
         // In this case, we are buffering the point to create a polygon. The transformed field gets renamed to
         // 'derived'.
-        String[] properties = new String[]{GdeltFeature.Attributes.geom.getName(),
-                "derived=buffer(" + GdeltFeature.Attributes.geom.getName() +
-                        ", 2)"};
+        String[] properties = new String[] {GdeltFeature.Attributes.geom.getName(),
+                                            "derived=buffer(" + GdeltFeature.Attributes.geom.getName() +
+                                            ", 2)"};
 
         // create the query - we use the extended constructor to pass in our transform
         Query query = new Query(simpleFeatureTypeName, cqlFilter, properties);
@@ -258,7 +292,8 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.geom.getName(), "derived"));
+            printResults(iterator, Arrays.asList(GdeltFeature.Attributes.geom.getName(),
+                                                 "derived"));
         } finally {
             iterator.close();
         }
@@ -281,7 +316,8 @@ public class QueryTutorial {
             StringBuilder result = new StringBuilder();
             result.append(++n);
             for (String attribute : attributes) {
-                result.append("|").append(attribute).append('=').append(feature.getProperty(attribute).getValue());
+                result.append("|").append(attribute).append('=').append(feature.getProperty(
+                        attribute).getValue());
             }
             System.out.println(result.toString());
         }
@@ -292,15 +328,18 @@ public class QueryTutorial {
      * Main entry point. Executes queries against an existing GDELT dataset.
      *
      * @param args
+     *
      * @throws Exception
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)
+            throws Exception {
         // read command line options - this contains the connection to accumulo and the table to query
         CommandLineParser parser = new BasicParser();
         Options options = SetupUtil.getCommonRequiredOptions();
         options.addOption(OptionBuilder.withArgName(FEATURE_NAME_ARG).hasArg().isRequired()
-                .withDescription("the FeatureTypeName used to store the GDELT data, e.g.:  gdelt")
-                .create(FEATURE_NAME_ARG));
+                                       .withDescription(
+                                               "the FeatureTypeName used to store the GDELT data, e.g.:  gdelt")
+                                       .create(FEATURE_NAME_ARG));
         CommandLine cmd = parser.parse(options, args);
 
         // verify that we can see this Accumulo destination in a GeoTools manner
@@ -313,9 +352,11 @@ public class QueryTutorial {
 
         // create the simple feature type for our test
         String simpleFeatureTypeName = cmd.getOptionValue(FEATURE_NAME_ARG);
-        SimpleFeatureType simpleFeatureType = GdeltFeature.buildGdeltFeatureType(simpleFeatureTypeName);
+        SimpleFeatureType simpleFeatureType = GdeltFeature.buildGdeltFeatureType(
+                simpleFeatureTypeName);
 
-        FeatureStore featureStore = (AccumuloFeatureStore) dataStore.getFeatureSource(simpleFeatureTypeName);
+        FeatureStore featureStore = (AccumuloFeatureStore) dataStore.getFeatureSource(
+                simpleFeatureTypeName);
 
         // execute some queries
         basicQuery(simpleFeatureTypeName, featureStore);
