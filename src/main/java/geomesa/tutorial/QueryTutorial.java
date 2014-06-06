@@ -16,6 +16,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.text.cql2.CQLException;
 import org.opengis.feature.Feature;
+import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
@@ -244,7 +245,7 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator);
+            printResults(iterator, "derived");
         } finally {
             iterator.close();
         }
@@ -283,7 +284,7 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator);
+            printResults(iterator, "derived");
         } finally {
             iterator.close();
         }
@@ -323,7 +324,7 @@ public class QueryTutorial {
         // loop through all results
         FeatureIterator iterator = results.features();
         try {
-            printResults(iterator);
+            printResults(iterator, "derived");
         } finally {
             iterator.close();
         }
@@ -334,7 +335,7 @@ public class QueryTutorial {
      *
      * @param iterator
      */
-    private static void printResults(FeatureIterator iterator) {
+    private static void printResults(FeatureIterator iterator, String... derivedAttributes) {
 
         if (iterator.hasNext()) {
             System.out.println("Results:");
@@ -347,15 +348,32 @@ public class QueryTutorial {
             StringBuilder result = new StringBuilder();
             result.append(++n);
 
-            for (org.opengis.feature.Property property : feature.getProperties()) {
-                result.append("|")
-                      .append(property.getName())
-                      .append('=')
-                      .append(property.getValue());
+            for (GdeltFeature.Attributes attribute : GdeltFeature.Attributes.values()) {
+                Property property = feature.getProperty(attribute.getName());
+                appendResult(result, property);
+            }
+            for (String derivedAttibute : derivedAttributes) {
+                Property property = feature.getProperty(derivedAttibute);
+                appendResult(result, property);
             }
             System.out.println(result.toString());
         }
         System.out.println();
+    }
+
+    /**
+     * Append the property to the result
+     *
+     * @param string
+     * @param property
+     */
+    private static void appendResult(StringBuilder string, Property property) {
+        if (property != null) {
+            string.append("|")
+                  .append(property.getName())
+                  .append('=')
+                  .append(property.getValue());
+        }
     }
 
     /**
