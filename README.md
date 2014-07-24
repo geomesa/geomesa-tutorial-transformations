@@ -77,7 +77,7 @@ Run the tutorial
 On the command-line, run:
 
 ```
-java -cp ./target/geomesa-tutorial-transformations-1.0.jar geomesa.tutorial.QueryTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
+java -cp ./target/geomesa-tutorial-transformations-accumulo1.5-1.0-SNAPSHOT.jar geomesa.tutorial.QueryTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
 ```
 
 where you provide the following arguments:
