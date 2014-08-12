@@ -349,8 +349,12 @@ public class QueryTutorial {
             result.append(++n);
 
             for (GdeltFeature.Attributes attribute : GdeltFeature.Attributes.values()) {
-                Property property = feature.getProperty(attribute.getName());
-                appendResult(result, property);
+                try {
+                    Property property = feature.getProperty(attribute.getName());
+                    appendResult(result, property);
+                } catch (Exception e) {
+                    // GEOMESA-280 - currently asking for non-existing properties throws an NPE
+                }
             }
             for (String derivedAttibute : derivedAttributes) {
                 Property property = feature.getProperty(derivedAttibute);
