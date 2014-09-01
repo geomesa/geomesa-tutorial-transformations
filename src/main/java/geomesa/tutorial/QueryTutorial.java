@@ -1,20 +1,12 @@
 package geomesa.tutorial;
 
-import geomesa.core.data.AccumuloFeatureStore;
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
-import org.geotools.data.FeatureStore;
-import org.geotools.data.Query;
+import org.apache.commons.cli.*;
+import org.geotools.data.*;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.text.cql2.CQLException;
+import org.locationtech.geomesa.core.data.AccumuloFeatureStore;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -22,7 +14,6 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -77,10 +68,10 @@ public class QueryTutorial {
         calendar.set(Calendar.HOUR_OF_DAY, 23);
         Date end = calendar.getTime();
 
-        Filter timeFilter =
-                ff.between(ff.property(GdeltFeature.Attributes.SQLDATE.getName()),
+        /*Filter timeFilter =
+                ff.between(ff.property(GdeltFeature.Attributes.created_at.getName()),
                            ff.literal(start),
-                           ff.literal(end));
+                           ff.literal(end)); */
 
         // We'll bound our query spatially to Ukraine
         Filter spatialFilter =
@@ -91,14 +82,14 @@ public class QueryTutorial {
                         52.379581,
                         "EPSG:4326");
 
-        // we'll also restrict our query to only articles about the US, UK or UN
+        /*// we'll also restrict our query to only articles about the US, UK or UN
         Filter attributeFilter = ff.like(ff.property(GdeltFeature.Attributes.Actor1Name.getName()),
-                                         "UNITED%");
+                                         "UNITED%");*/
 
         // Now we can combine our filters using a boolean AND operator
-        Filter conjunction = ff.and(Arrays.asList(timeFilter, spatialFilter, attributeFilter));
+        //Filter conjunction = ff.and(Arrays.asList(timeFilter, spatialFilter, attributeFilter));
 
-        return conjunction;
+        return spatialFilter;
     }
 
     /**
@@ -151,7 +142,7 @@ public class QueryTutorial {
 
         // define the properties (attributes) that we want returned as a string array
         // each element of the array is a property name we want returned
-        String[] properties = new String[] {GdeltFeature.Attributes.Actor1Name.getName(),
+        String[] properties = new String[] {GdeltFeature.Attributes.country.getName(),
                                             GdeltFeature.Attributes.geom.getName()};
 
         // create the query - we use the extended constructor to pass in our projection
@@ -189,8 +180,8 @@ public class QueryTutorial {
         // this also allows us to manipulate properties using various GeoTools transforms.
         // In this case, we are using a string concatenation to say 'hello' to our results. We
         // are overwriting the existing field with the results of the transform.
-        String[] properties = new String[] {GdeltFeature.Attributes.Actor1Name.getName() + "=strConcat('hello '," +
-                                            "" + GdeltFeature.Attributes.Actor1Name.getName() +
+        String[] properties = new String[] {GdeltFeature.Attributes.country.getName() + "=strConcat('hello '," +
+                                            "" + GdeltFeature.Attributes.country.getName() +
                                             ")", GdeltFeature.Attributes.geom.getName()};
 
         // create the query - we use the extended constructor to pass in our transform
@@ -231,9 +222,9 @@ public class QueryTutorial {
         // storing the result of the transform in a new dynamic field, called 'derived'. We also
         // return the original attribute unchanged.
         String[] properties =
-                new String[] {GdeltFeature.Attributes.Actor1Name.getName(),
+                new String[] {GdeltFeature.Attributes.country.getName(),
                               "derived=strConcat('hello '," +
-                              GdeltFeature.Attributes.Actor1Name + ")",
+                              GdeltFeature.Attributes.country.getName() + ")",
                               GdeltFeature.Attributes.geom.getName()};
 
         // create the query - we use the extended constructor to pass in our transform
@@ -272,7 +263,7 @@ public class QueryTutorial {
         // this also allows us to manipulate properties using various GeoTools transforms.
         // In this case, we are concatenating two different attributes.
         String[] properties = new String[] {"derived=strConcat(strConcat(" +
-                                            GdeltFeature.Attributes.Actor1Name + ",' - ')," + GdeltFeature.Attributes.Actor1Geo_FullName +
+                                            GdeltFeature.Attributes.country.getName() + ",' - ')," + GdeltFeature.Attributes.tweetword.getName() +
                                             ")", GdeltFeature.Attributes.geom.getName()};
 
         // create the query - we use the extended constructor to pass in our transform

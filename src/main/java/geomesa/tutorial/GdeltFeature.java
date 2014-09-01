@@ -1,7 +1,7 @@
 package geomesa.tutorial;
 
 import com.google.common.base.Joiner;
-import geomesa.core.index.Constants;
+import org.locationtech.geomesa.core.index.Constants;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -28,63 +28,19 @@ public class GdeltFeature {
 
     public static enum Attributes {
 
-        GLOBALEVENTID("Integer"),
-        SQLDATE("Date"),
-        MonthYear("Integer"),
-        Year("Integer"),
-        FractionDate("Float"),
-        Actor1Code("String"),
-        Actor1Name("String"),
-        Actor1CountryCode("String"),
-        Actor1KnownGroupCode("String"),
-        Actor1EthnicCode("String"),
-        Actor1Religion1Code("String"),
-        Actor1Religion2Code("String"),
-        Actor1Type1Code("String"),
-        Actor1Type2Code("String"),
-        Actor1Type3Code("String"),
-        Actor2Code("String"),
-        Actor2Name("String"),
-        Actor2CountryCode("String"),
-        Actor2KnownGroupCode("String"),
-        Actor2EthnicCode("String"),
-        Actor2Religion1Code("String"),
-        Actor2Religion2Code("String"),
-        Actor2Type1Code("String"),
-        Actor2Type2Code("String"),
-        Actor2Type3Code("String"),
-        IsRootEvent("Integer"),
-        EventCode("String"),
-        EventBaseCode("String"),
-        EventRootCode("String"),
-        QuadClass("Integer"),
-        GoldsteinScale("Float"),
-        NumMentions("Integer"),
-        NumSources("Integer"),
-        NumArticles("Integer"),
-        AvgTone("Float"),
-        Actor1Geo_Type("Integer"),
-        Actor1Geo_FullName("String"),
-        Actor1Geo_CountryCode("String"),
-        Actor1Geo_ADM1Code("String"),
-        Actor1Geo_Lat("Float"),
-        Actor1Geo_Long("Float"),
-        Actor1Geo_FeatureID("Integer"),
-        Actor2Geo_Type("Integer"),
-        Actor2Geo_FullName("String"),
-        Actor2Geo_CountryCode("String"),
-        Actor2Geo_ADM1Code("String"),
-        Actor2Geo_Lat("Float"),
-        Actor2Geo_Long("Float"),
-        Actor2Geo_FeatureID("Integer"),
-        ActionGeo_Type("Integer"),
-        ActionGeo_FullName("String"),
-        ActionGeo_CountryCode("String"),
-        ActionGeo_ADM1Code("String"),
-        ActionGeo_Lat("Float"),
-        ActionGeo_Long("Float"),
-        ActionGeo_FeatureID("Integer"),
-        DATEADDED("Integer"),
+        created_at("Date"),
+        country("String"),
+        lon("Double"),
+        lat("Double"),
+        text("String"),
+        the_date("String"),
+        tweetword("String"),
+        the_id("String"),
+        MatchCount("Integer"),
+        Matches("String"),
+        Points("Integer"),
+        Avg("Double"),
+        PtVar("Double"),
         geom("Point");
 
         private String type;
@@ -98,6 +54,7 @@ public class GdeltFeature {
         }
 
         public String getName() {
+            if (name() == "lon") return "long";
             return name();
         }
     }
@@ -125,7 +82,7 @@ public class GdeltFeature {
 
         SimpleFeatureType featureType = DataUtilities.createType(featureName, spec);
         //This tells GeoMesa to use this Attribute as the Start Time index
-        featureType.getUserData().put(Constants.SF_PROPERTY_START_TIME, Attributes.SQLDATE.name());
+        featureType.getUserData().put(Constants.SF_PROPERTY_START_TIME, Attributes.created_at.name());
         return featureType;
     }
 }
