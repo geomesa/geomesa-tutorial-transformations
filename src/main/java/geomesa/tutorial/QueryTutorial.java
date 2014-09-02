@@ -76,10 +76,10 @@ public class QueryTutorial {
         // We'll bound our query spatially to Ukraine
         Filter spatialFilter =
                 ff.bbox(GdeltFeature.Attributes.geom.getName(),
-                        22.1371589,
-                        44.386463,
-                        40.228581,
-                        52.379581,
+                        47.0,
+                        27.0,
+                        50.0,
+                        30.0,
                         "EPSG:4326");
 
         /*// we'll also restrict our query to only articles about the US, UK or UN
