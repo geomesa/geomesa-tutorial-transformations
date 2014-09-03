@@ -1,7 +1,7 @@
 package geomesa.tutorial;
 
 import com.google.common.base.Joiner;
-import geomesa.core.index.Constants;
+import org.locationtech.geomesa.core.index.Constants;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
 import org.opengis.feature.simple.SimpleFeatureType;

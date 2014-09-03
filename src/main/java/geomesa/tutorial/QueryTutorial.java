@@ -1,6 +1,6 @@
 package geomesa.tutorial;
 
-import geomesa.core.data.AccumuloFeatureStore;
+import org.locationtech.geomesa.core.data.AccumuloFeatureStore;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -400,6 +400,8 @@ public class QueryTutorial {
 
         // verify that we can see this Accumulo destination in a GeoTools manner
         Map<String, String> dsConf = SetupUtil.getAccumuloDataStoreConf(cmd);
+        //Disable states collection
+        dsConf.put("collectStats", "false");
         DataStore dataStore = DataStoreFinder.getDataStore(dsConf);
         assert dataStore != null;
 
