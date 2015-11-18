@@ -1,9 +1,9 @@
 package geomesa.tutorial;
 
 import com.google.common.base.Joiner;
-import org.locationtech.geomesa.core.index.Constants;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.SchemaException;
+import org.locationtech.geomesa.accumulo.index.Constants;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import java.util.ArrayList;

@@ -41,7 +41,7 @@ git clone git@github.com:locationtech/geomesa.git
 From that newly-created directory, run
 
 ```
-mvn clean install
+build/mvn clean install -DskipTests
 ```
 
 NB:  This step is only required, because the GeoMesa artifacts have not yet
@@ -77,7 +77,7 @@ Run the tutorial
 On the command-line, run:
 
 ```
-java -cp ./target/geomesa-tutorial-transformations-accumulo1.5-1.0-SNAPSHOT.jar geomesa.tutorial.QueryTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
+java -cp ./target/geomesa-tutorial-transformations-1.0-SNAPSHOT.jar geomesa.tutorial.QueryTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
 ```
 
 where you provide the following arguments:
